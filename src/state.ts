@@ -1,0 +1,6 @@
+export enum State {
+  STOPPED = "STOPPED",
+  STARTING = "STARTING",
+  STARTED = "STARTED",
+  STOPPING = "STOPPING",
+}
