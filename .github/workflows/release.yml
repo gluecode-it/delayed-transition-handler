@@ -16,17 +16,17 @@ jobs:
           node-version: 12
       - name: npmrc
         run: >-
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >>
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >>
           .npmrc
       - name: Install dependencies
         run: npm install
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-          NPM_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          NPM_TOKEN: '${{ secrets.NPM_TOKEN }}'
       - name: Run Jest
         run: npm test
       - name: 'Release with semantic release'
         run: npx semantic-release
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-          NPM_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          NPM_TOKEN: '${{ secrets.NPM_TOKEN }}'
