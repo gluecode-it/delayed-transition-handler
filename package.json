@@ -1,5 +1,5 @@
 {
-  "name": "delayed-start-stop-handler",
+  "name": "delayed-transition-handler",
   "version": "1.0.0",
   "description": "",
   "main": "dist/src/index.js",
