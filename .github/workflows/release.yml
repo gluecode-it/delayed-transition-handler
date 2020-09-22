@@ -3,6 +3,8 @@ name: Release
   push:
     branches:
       - master
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
 jobs:
   release:
     name: Release
