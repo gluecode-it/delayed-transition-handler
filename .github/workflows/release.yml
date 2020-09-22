@@ -26,7 +26,7 @@ jobs:
       - name: Run Jest
         run: npm test
       - name: 'Release with semantic release'
-        run: npx semantic-release
+        uses: cycjimmy/semantic-release-action@v2
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
           NPM_TOKEN: '${{ secrets.NPM_TOKEN }}'
