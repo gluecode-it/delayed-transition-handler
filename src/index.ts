@@ -2,104 +2,61 @@ import { EventEmitter } from "events";
 import { Events } from "./events";
 import { State } from "./state";
 
-export class DelayedStartStopHandler {
-  private startupDelayTimeout: NodeJS.Timeout | null;
-  private stopDelayTimeout: NodeJS.Timeout | null;
+export class DelayedTransitionHandler {
+  private delayTimeout: NodeJS.Timeout | null;
+
+  private currentState: State = State.STATUS_A;
 
   constructor(
-    private startDelayMs: number = 0,
-    private stopDelayMs: number = 0,
-    private state: State = State.STOPPED,
+    private delayMs: number = 0,
     private emitter: EventEmitter = new EventEmitter()
   ) {
-    this.startupDelayTimeout = null;
-    this.stopDelayTimeout = null;
-    this.emitter.on(Events.START, () => (this.state = State.STARTED));
-    this.emitter.on(Events.STOP, () => (this.state = State.STOPPED));
-    this.emitter.on(
-      Events.START_SCHEDULED,
-      () => (this.state = State.STARTING)
-    );
-    this.emitter.on(Events.STOP_SCHEDULED, () => (this.state = State.STOPPING));
-    this.emitter.on(Events.START_ABORT, () => (this.state = State.STOPPED));
-    this.emitter.on(Events.STOP_ABORT, () => (this.state = State.STARTED));
+    this.delayTimeout = null;
+    this.emitter.on(Events.TRANSITION_DONE, () => (this.currentState = State.STATUS_B));
+    //this.emitter.on(Events.TRANSITION_SCHEDULED, () => (this.currentState = State.TRANSITIONING));
+    this.emitter.on(Events.TRANSITION_ABORT, () => (this.currentState = State.STATUS_A));
   }
 
-  private is(state: State) {
-    return this.state === state;
+  public is(stateToCheck: State): boolean {
+    return this.currentState === stateToCheck;
   }
 
   public getState() {
-    return this.state;
+    return this.currentState;
   }
 
-  public scheduleStart(startDelayMs?: number): boolean {
-    if (!this.is(State.STOPPED)) {
-      throw new Error("has to be stopped to be started");
+  public scheduleTransition(): boolean {
+    if (!this.is(State.STATUS_A)) {
+      throw new Error("currentState has to be STATUS_A");
     }
 
-    this.startupDelayTimeout = setTimeout(() => {
-      this.startupDelayTimeout = null;
-      this.emitter.emit(Events.START);
-    }, startDelayMs || this.startDelayMs);
-    return this.emitter.emit(Events.START_SCHEDULED);
+    this.delayTimeout = setTimeout(() => {
+      this.delayTimeout = null;
+      this.emitter.emit(Events.TRANSITION_DONE);
+    }, this.delayMs);
+    this.currentState = State.TRANSITIONING;
+    return this.emitter.emit(Events.TRANSITION_SCHEDULED);
   }
 
-  public abortStart(): boolean {
-    if (!this.is(State.STARTING)) {
-      throw new Error("there is no startup scheduled");
+  public abortTransition(): boolean {
+    if (!this.is(State.TRANSITIONING)) {
+      throw new Error("there is no transition scheduled");
     }
-    clearTimeout(this.startupDelayTimeout as NodeJS.Timeout);
-    this.startupDelayTimeout = null;
-    return this.emitter.emit(Events.START_ABORT);
+    clearTimeout(this.delayTimeout as NodeJS.Timeout);
+    this.delayTimeout = null;
+    
+    return this.emitter.emit(Events.TRANSITION_ABORT);
   }
 
-  public onStartScheduled(callback: () => void) {
-    this.emitter.on(Events.START_SCHEDULED, callback);
+  public onTransitionScheduled(callback: () => void) {
+    this.emitter.on(Events.TRANSITION_SCHEDULED, callback);
   }
 
-  public onStart(callback: () => void) {
-    this.emitter.on(Events.START, callback);
+  public onTransitionStarted(callback: () => void) {
+    this.emitter.on(Events.TRANSITION_DONE, callback);
   }
 
-  public onStartAbort(callback: () => void) {
-    this.emitter.on(Events.START_ABORT, callback);
-  }
-
-  public scheduleStop(stopDelayMs?: number): boolean {
-    if (!this.is(State.STARTED)) {
-      throw new Error("have to be started to be stopped");
-    }
-
-    this.stopDelayTimeout = setTimeout(() => {
-      this.stopDelayTimeout = null;
-      this.emitter.emit(Events.STOP);
-    }, stopDelayMs || this.stopDelayMs);
-    return this.emitter.emit(Events.STOP_SCHEDULED);
-  }
-
-  public abortStop(): boolean {
-    if (!this.is(State.STOPPING)) {
-      throw new Error("there is no stop scheduled");
-    }
-    clearTimeout(this.stopDelayTimeout as NodeJS.Timeout);
-    this.stopDelayTimeout = null;
-    return this.emitter.emit(Events.STOP_ABORT);
-  }
-
-  onStopScheduled(callback: () => void) {
-    this.emitter.on(Events.STOP_SCHEDULED, callback);
-  }
-
-  onStop(callback: () => void) {
-    this.emitter.on(Events.STOP, callback);
-  }
-
-  onStopAbort(callback: () => void) {
-    this.emitter.on(Events.STOP_ABORT, callback);
-  }
-
-  on(event: Events, callback: () => void) {
-    this.emitter.on(event, callback);
+  public onTransitionAborted(callback: () => void) {
+    this.emitter.on(Events.TRANSITION_ABORT, callback);
   }
 }

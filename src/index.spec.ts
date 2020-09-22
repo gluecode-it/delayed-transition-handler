@@ -1,153 +1,79 @@
-import { DelayedStartStopHandler } from ".";
+import { DelayedTransitionHandler } from ".";
 import { State } from "./state";
 import { Events } from "./events";
 
-describe("VoiceChannelObserver", () => {
+describe("DelayedTransitionHandler", () => {
   beforeEach(() => {});
 
-  describe("to be defined", () => {
-    it("with no users", () => {
-      const handler = new DelayedStartStopHandler();
-      expect(handler).toBeDefined();
-    });
+  it("should be a DelayedTransitionHandler", () => {
+    const handler = new DelayedTransitionHandler();
+    expect(handler).toBeInstanceOf(DelayedTransitionHandler);
+  });
 
-    it("should start on status STOPPED if nothing is given", () => {
-      const handler = new DelayedStartStopHandler();
-      expect(handler.getState()).toEqual(State.STOPPED);
-    });
-
-    it("should start on status STARTED if STARTED was given", () => {
-      const handler = new DelayedStartStopHandler(0, 0, State.STARTED);
-      expect(handler.getState()).toEqual(State.STARTED);
+  describe("is()", () => {
+    it("should return true, if givenState is currentState", () => {
+      const handler = new DelayedTransitionHandler();
+      expect(handler.is(State.STATUS_A)).toEqual(true);
     });
   });
 
-  it(`if event ${Events.START} emitted, status should be ${State.STARTED}`, (done) => {
-    const handler = new DelayedStartStopHandler(0, 0, State.STOPPED);
-    handler.on(Events.START, () =>
-      setTimeout(() => {
-        expect(handler.getState() === State.STARTED);
-        done();
-      }, 5)
-    );
-    handler.scheduleStart();
+  describe("scheduleTransition()", () => {
+    it("should throw an error, if the state is not STATUS_A", () => {
+      const handler = new DelayedTransitionHandler();
+      handler.scheduleTransition();
+      expect(() => handler.scheduleTransition()).toThrow(Error);
+    });
   });
 
-  describe("scheduleStart", () => {
-    describe("should throw a exception", () => {
-      Object.keys(State)
-        .filter((state) => state !== State.STOPPED)
-        .forEach((state) => {
-          it(`if state is ${state}`, () => {
-            const handler = new DelayedStartStopHandler(0, 0, state as State);
-            expect(() => handler.scheduleStart()).toThrowError(
-              "has to be stopped to be started"
-            );
-          });
-        });
-    });
-
-    it(`should emit ${Events.START_SCHEDULED} if state is ${State.STOPPED}`, () => {
-      const handler = new DelayedStartStopHandler(0, 0, State.STOPPED);
+  describe("onTransitionScheduled()", () => {
+    it("should call callback, if transition is scheduled", () => {
+      const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
-      handler.onStartScheduled(callback);
-      handler.scheduleStart();
+      handler.onTransitionScheduled(callback);
+      handler.scheduleTransition();
       expect(callback).toBeCalled();
     });
+  })
 
-    it(`should emit ${Events.START} if state is ${State.STOPPED}`, (done) => {
-      const handler = new DelayedStartStopHandler(1, 1, State.STOPPED);
+  describe("onTransitionStart", () => {
+    it("should call callback, if transition is started", (done) => {
+      const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
-      handler.onStart(callback);
-      handler.scheduleStart(5);
+      handler.onTransitionStarted(callback);
+      handler.scheduleTransition();
       setTimeout(() => {
         expect(callback).toBeCalled();
         done();
-      }, 10);
+      }, 1);
     });
+  })
 
-    it(`should emit ${Events.START_SCHEDULED} if state is ${State.STOPPED}`, (done) => {
-      const handler = new DelayedStartStopHandler(1, 1, State.STOPPED);
-      const callback = jest.fn();
-      handler.onStartScheduled(callback);
-      handler.scheduleStart(5);
+  describe("getState()", () => {
+    it("should be a State", (done) => {
+      const handler = new DelayedTransitionHandler();
+      handler.scheduleTransition();
       setTimeout(() => {
-        expect(callback).toBeCalled();
+        expect(handler.getState()).toEqual(State.STATUS_B);
         done();
-      }, 10);
-    });
-
-    it(`should emit ${Events.STOP_SCHEDULED} if state is ${State.STARTED}`, (done) => {
-      const handler = new DelayedStartStopHandler(1, 1, State.STARTED);
-      const callback = jest.fn();
-      handler.onStopScheduled(callback);
-      handler.scheduleStop(5);
-      setTimeout(() => {
-        expect(callback).toBeCalled();
-        done();
-      }, 10);
-    });
-
-    it(`should emit ${Events.STOP} if scheduleStop() is called`, (done) => {
-      const handler = new DelayedStartStopHandler(1, 1, State.STARTED);
-      const callback = jest.fn();
-      handler.onStop(callback);
-      handler.scheduleStop(5);
-      setTimeout(() => {
-        expect(callback).toBeCalled();
-        done();
-      }, 10);
-    });
-
-    it(`should emit ${Events.STOP_ABORT} if abortStop() is called`, (done) => {
-      const handler = new DelayedStartStopHandler(1, 1, State.STOPPING);
-      const callback = jest.fn();
-      handler.onStopAbort(callback);
-      handler.abortStop();
-      setTimeout(() => {
-        expect(callback).toBeCalled();
-        done();
-      }, 10);
+      }, 1);
     });
   });
 
-  describe("abortStart", () => {
-    describe("should throw a exception", () => {
-      Object.keys(State)
-        .filter((state) => state !== State.STARTING)
-        .forEach((state) => {
-          it(`if state is ${state}`, () => {
-            const handler = new DelayedStartStopHandler(0, 0, state as State);
-            expect(() => handler.abortStart()).toThrowError(
-              "there is no startup scheduled"
-            );
-          });
-        });
+  describe("abortTransition()", () => {
+    it("should throw an error, if the state is not TRANSITIONING", () => {
+      const handler = new DelayedTransitionHandler();
+      expect(() => handler.abortTransition()).toThrow(Error);      
     });
+  });
 
-    it(`should emit ${Events.START_ABORT} if state is ${State.STARTING}`, () => {
-      const handler = new DelayedStartStopHandler(0, 0, State.STARTING);
+  describe("onTransitionAbort()", () => {
+    it("should call callback, if transition is aborted", () => {
+      const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
-      handler.onStartAbort(callback);
-      handler.abortStart();
+      handler.onTransitionAborted(callback);
+      handler.scheduleTransition();
+      handler.abortTransition();
       expect(callback).toBeCalled();
     });
-  });
-
-  describe("scheduleStop", () => {
-    describe("should throw a exception", () => {
-      Object.keys(State)
-        .filter((state) => state !== State.STARTED)
-        .forEach((state) => {
-          it(`if state is ${state}`, () => {
-            const handler = new DelayedStartStopHandler(0, 0, state as State);
-            expect(() => handler.scheduleStop()).toThrowError(
-              "have to be started to be stopped"
-            );
-          });
-        });
-    });
-
-    describe("", () => {});
-  });
+  })
 });
