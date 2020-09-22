@@ -1,6 +1,5 @@
 import { DelayedTransitionHandler } from ".";
 import { State } from "./state";
-import { Events } from "./events";
 
 describe("DelayedTransitionHandler", () => {
   beforeEach(() => {});
@@ -66,7 +65,7 @@ describe("DelayedTransitionHandler", () => {
     });
   });
 
-  describe("onTransitionAbort()", () => {
+  /*describe("onTransitionAbort()", () => {
     it("should call callback, if transition is aborted", () => {
       const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
@@ -75,5 +74,5 @@ describe("DelayedTransitionHandler", () => {
       handler.abortTransition();
       expect(callback).toBeCalled();
     });
-  })
+  })*/
 });
