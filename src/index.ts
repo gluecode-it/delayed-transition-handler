@@ -47,7 +47,7 @@ export class DelayedTransitionHandler {
     
     return this.emitter.emit(Events.TRANSITION_ABORT);
   }
-
+ 
   public onTransitionScheduled(callback: () => void) {
     this.emitter.on(Events.TRANSITION_SCHEDULED, callback);
   }

@@ -34,7 +34,7 @@ describe("DelayedTransitionHandler", () => {
     });
   })
 
-  describe("onTransitionStart", () => {
+  describe("onTransitionStart()", () => {
     it("should call callback, if transition is started", (done) => {
       const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
