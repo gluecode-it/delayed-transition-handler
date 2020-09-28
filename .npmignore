@@ -1,4 +1,4 @@
 **.*
-!dist/src/index.js
-!dist/src/index.d.ts
-!dist/scr/events.ts
+!dist/src/*.js
+!dist/src/*.d.ts
+dist/src/*.spec*
