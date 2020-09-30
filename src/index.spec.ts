@@ -38,7 +38,7 @@ describe("DelayedTransitionHandler", () => {
     it("should call callback, if transition is started", (done) => {
       const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
-      handler.onTransitionStarted(callback);
+      handler.onTransitionFinished(callback);
       handler.scheduleTransition();
       setTimeout(() => {
         expect(callback).toBeCalled();
@@ -75,4 +75,24 @@ describe("DelayedTransitionHandler", () => {
       expect(callback).toBeCalled();
     });
   })
+
+  describe("reset()", () => {
+    it("should throw an error, if the state is not B", () => {
+      const handler = new DelayedTransitionHandler();
+      expect(() => handler.reset()).toThrow(Error);      
+    });
+  });
+
+  describe("reset()", () => {
+    it("should change state B to A", (done) => {
+      const handler = new DelayedTransitionHandler();
+      handler.scheduleTransition();
+      handler.onTransitionFinished(() => {
+        expect(handler.getState()).toEqual(State.STATUS_B);
+        handler.reset();
+        expect(handler.getState()).toEqual(State.STATUS_A);
+        done()
+      })
+    });
+  });
 });

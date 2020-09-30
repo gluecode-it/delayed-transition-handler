@@ -6,7 +6,8 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "pretest": "tsc",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "dev:test": "jest --coverage --coverage-reporters html --watch-all"
   },
   "author": "",
   "license": "ISC",

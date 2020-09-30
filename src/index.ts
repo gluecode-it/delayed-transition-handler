@@ -52,11 +52,18 @@ export class DelayedTransitionHandler {
     this.emitter.on(Events.TRANSITION_SCHEDULED, callback);
   }
 
-  public onTransitionStarted(callback: () => void) {
+  public onTransitionFinished(callback: () => void) {
     this.emitter.on(Events.TRANSITION_DONE, callback);
   }
 
   public onTransitionAborted(callback: () => void) {
     this.emitter.on(Events.TRANSITION_ABORT, callback);
+  }
+
+  public reset () {
+    if(!this.is(State.STATUS_B)) {
+      throw new Error('could not reset, because state is not B')
+    }
+    this.currentState = State.STATUS_A
   }
 }
