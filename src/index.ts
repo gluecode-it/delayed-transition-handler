@@ -12,9 +12,15 @@ export class DelayedTransitionHandler {
     private emitter: EventEmitter = new EventEmitter()
   ) {
     this.delayTimeout = null;
-    this.emitter.on(Events.TRANSITION_DONE, () => (this.currentState = State.STATUS_B));
+    this.emitter.on(
+      Events.TRANSITION_DONE,
+      () => (this.currentState = State.STATUS_B)
+    );
     //this.emitter.on(Events.TRANSITION_SCHEDULED, () => (this.currentState = State.TRANSITIONING));
-    this.emitter.on(Events.TRANSITION_ABORT, () => (this.currentState = State.STATUS_A));
+    this.emitter.on(
+      Events.TRANSITION_ABORT,
+      () => (this.currentState = State.STATUS_A)
+    );
   }
 
   public is(stateToCheck: State): boolean {
@@ -44,26 +50,38 @@ export class DelayedTransitionHandler {
     }
     clearTimeout(this.delayTimeout as NodeJS.Timeout);
     this.delayTimeout = null;
-    
+
     return this.emitter.emit(Events.TRANSITION_ABORT);
   }
- 
+
   public onTransitionScheduled(callback: () => void) {
     this.emitter.on(Events.TRANSITION_SCHEDULED, callback);
+  }
+
+  public onceTransitionScheduled(callback: () => void) {
+    this.emitter.once(Events.TRANSITION_SCHEDULED, callback);
   }
 
   public onTransitionFinished(callback: () => void) {
     this.emitter.on(Events.TRANSITION_DONE, callback);
   }
 
+  public onceTransitionFinished(callback: () => void) {
+    this.emitter.once(Events.TRANSITION_DONE, callback);
+  }
+
   public onTransitionAborted(callback: () => void) {
     this.emitter.on(Events.TRANSITION_ABORT, callback);
   }
 
-  public reset () {
-    if(!this.is(State.STATUS_B)) {
-      throw new Error('could not reset, because state is not B')
+  public onceTransitionAborted(callback: () => void) {
+    this.emitter.once(Events.TRANSITION_ABORT, callback);
+  }
+
+  public reset() {
+    if (!this.is(State.STATUS_B)) {
+      throw new Error("could not reset, because state is not B");
     }
-    this.currentState = State.STATUS_A
+    this.currentState = State.STATUS_A;
   }
 }
