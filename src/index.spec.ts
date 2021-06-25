@@ -142,4 +142,17 @@ describe("DelayedTransitionHandler", () => {
       });
     });
   });
+
+  describe("setDelay()", () => {
+    it("should set the delay", (done) => {
+      const handler = new DelayedTransitionHandler();
+      const expected = 10;
+
+      expect(handler.getDelay()).toEqual(0);
+      handler.setDelay(10);
+
+      expect(handler.getDelay()).toEqual(expected);
+      done();
+    });
+  });
 });

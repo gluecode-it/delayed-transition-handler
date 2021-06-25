@@ -84,4 +84,12 @@ export class DelayedTransitionHandler {
     }
     this.currentState = State.STATUS_A;
   }
+
+  public getDelay() {
+    return this.delayMs;
+  }
+
+  public setDelay(delayMs: number) {
+    this.delayMs = delayMs;
+  }
 }
