@@ -32,9 +32,19 @@ describe("DelayedTransitionHandler", () => {
       handler.scheduleTransition();
       expect(callback).toBeCalled();
     });
-  })
+  });
 
-  describe("onTransitionStart()", () => {
+  describe("onceTransitionScheduled()", () => {
+    it("should call callback once, if transition is scheduled", () => {
+      const handler = new DelayedTransitionHandler();
+      const callback = jest.fn();
+      handler.onceTransitionScheduled(callback);
+      handler.scheduleTransition();
+      expect(callback).toBeCalledTimes(1);
+    });
+  });
+
+  describe("onTransitionFinished()", () => {
     it("should call callback, if transition is started", (done) => {
       const handler = new DelayedTransitionHandler();
       const callback = jest.fn();
@@ -45,7 +55,24 @@ describe("DelayedTransitionHandler", () => {
         done();
       }, 1);
     });
-  })
+  });
+
+  describe("onceTransitionFinished()", () => {
+    it("should call callback once, if transition is started", (done) => {
+      const handler = new DelayedTransitionHandler();
+      const callback = jest.fn();
+      handler.onceTransitionFinished(callback);
+      handler.scheduleTransition();
+      handler.onceTransitionFinished(() => {
+        handler.onceTransitionFinished(() => {
+          expect(callback).toBeCalledTimes(1);
+          done();
+        });
+        handler.reset();
+        handler.scheduleTransition();
+      });
+    });
+  });
 
   describe("getState()", () => {
     it("should be a State", (done) => {
@@ -61,7 +88,7 @@ describe("DelayedTransitionHandler", () => {
   describe("abortTransition()", () => {
     it("should throw an error, if the state is not TRANSITIONING", () => {
       const handler = new DelayedTransitionHandler();
-      expect(() => handler.abortTransition()).toThrow(Error);      
+      expect(() => handler.abortTransition()).toThrow(Error);
     });
   });
 
@@ -74,12 +101,32 @@ describe("DelayedTransitionHandler", () => {
       handler.abortTransition();
       expect(callback).toBeCalled();
     });
-  })
+  });
+
+  describe("onceTransitionAbort()", () => {
+    it("should call callback once, if transition is started", (done) => {
+      const handler = new DelayedTransitionHandler(100);
+      const callback = jest.fn();
+      handler.onceTransitionAborted(callback);
+      handler.onceTransitionScheduled(() => {
+        handler.onceTransitionAborted(() => {
+          handler.onceTransitionScheduled(() => {
+            handler.abortTransition();
+            expect(callback).toBeCalledTimes(1);
+            done();
+          });
+          handler.scheduleTransition();
+        });
+        handler.abortTransition();
+      });
+      handler.scheduleTransition();
+    });
+  });
 
   describe("reset()", () => {
     it("should throw an error, if the state is not B", () => {
       const handler = new DelayedTransitionHandler();
-      expect(() => handler.reset()).toThrow(Error);      
+      expect(() => handler.reset()).toThrow(Error);
     });
   });
 
@@ -91,8 +138,21 @@ describe("DelayedTransitionHandler", () => {
         expect(handler.getState()).toEqual(State.STATUS_B);
         handler.reset();
         expect(handler.getState()).toEqual(State.STATUS_A);
-        done()
-      })
+        done();
+      });
+    });
+  });
+
+  describe("setDelay()", () => {
+    it("should set the delay", (done) => {
+      const handler = new DelayedTransitionHandler();
+      const expected = 10;
+
+      expect(handler.getDelay()).toEqual(0);
+      handler.setDelay(10);
+
+      expect(handler.getDelay()).toEqual(expected);
+      done();
     });
   });
 });
