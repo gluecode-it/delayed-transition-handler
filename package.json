@@ -20,7 +20,7 @@
     "@types/jest": "26.0.23",
     "@types/node": "15.12.4",
     "babel-jest": "27.0.5",
-    "commitlint": "12.1.4",
+    "commitlint": "13.1.0",
     "husky": "6.0.0",
     "jest": "27.0.5",
     "semantic-release": "17.4.4",
