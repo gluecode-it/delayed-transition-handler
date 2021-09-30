@@ -92,4 +92,55 @@ export class DelayedTransitionHandler {
   public setDelay(delayMs: number) {
     this.delayMs = delayMs;
   }
+
+  public async waitForTransition(timeoutInMs?: number) {
+    return new Promise((resolve, reject) => {
+      let handle: NodeJS.Timeout;
+
+      const transitionHandler = () => {
+        clearTimeout(handle);
+        resolve(this.getState());
+      };
+
+      if (timeoutInMs) {
+        handle = setTimeout(() => {
+          this.emitter.removeListener(
+            Events.TRANSITION_DONE,
+            transitionHandler
+          );
+          return reject(this.getState());
+        });
+      }
+
+      this.onceTransitionFinished(transitionHandler);
+    });
+  }
+
+  public waitForTransitionOrAbortion(timeoutInMs?: number) {
+    return new Promise((resolve, reject) => {
+      let handle: NodeJS.Timeout;
+
+      const transitionHandler = () => {
+        clearTimeout(handle);
+        resolve(this.getState());
+      };
+
+      if (timeoutInMs) {
+        handle = setTimeout(() => {
+          this.emitter.removeListener(
+            Events.TRANSITION_DONE,
+            transitionHandler
+          );
+          this.emitter.removeListener(
+            Events.TRANSITION_ABORT,
+            transitionHandler
+          );
+          return reject(this.getState());
+        });
+      }
+
+      this.onceTransitionFinished(transitionHandler);
+      this.onceTransitionAborted(transitionHandler);
+    });
+  }
 }
