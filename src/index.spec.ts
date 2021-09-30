@@ -1,3 +1,4 @@
+import { EventEmitter } from "stream";
 import { DelayedTransitionHandler } from ".";
 import { State } from "./state";
 
@@ -153,6 +154,54 @@ describe("DelayedTransitionHandler", () => {
 
       expect(handler.getDelay()).toEqual(expected);
       done();
+    });
+  });
+
+  describe("waitForTransition", () => {
+    it("should resolve promise when transition happened", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(1, testEmitter);
+      handler.scheduleTransition();
+      await expect(handler.waitForTransition()).resolves.toEqual(
+        State.STATUS_B
+      );
+    });
+
+    it("should reject promise when transition timeouted", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(1, testEmitter);
+      await expect(handler.waitForTransition(5)).rejects.toEqual(
+        State.STATUS_A
+      );
+    });
+  });
+
+  describe("waitForTransitionOrAbortion", () => {
+    it("should resolve promise when transition happened", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(1, testEmitter);
+      handler.scheduleTransition();
+      await expect(handler.waitForTransitionOrAbortion()).resolves.toEqual(
+        State.STATUS_B
+      );
+    });
+
+    it("should resolve promise when transition not happend", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(1, testEmitter);
+      handler.scheduleTransition();
+      expect(handler.waitForTransitionOrAbortion()).resolves.toEqual(
+        State.STATUS_A
+      );
+      handler.abortTransition();
+    });
+
+    it("should reject promise when transition timeouted", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(5, testEmitter);
+      await expect(handler.waitForTransitionOrAbortion(1)).rejects.toEqual(
+        State.STATUS_A
+      );
     });
   });
 });
