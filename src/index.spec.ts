@@ -204,4 +204,23 @@ describe("DelayedTransitionHandler", () => {
       );
     });
   });
+
+  describe("waitForAbortion", () => {
+    it("should resolve promise when transition happened", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(1, testEmitter);
+      handler.scheduleTransition();
+      expect(handler.waitForAbortion()).resolves.toEqual(State.STATUS_A);
+      handler.abortTransition();
+    });
+
+    it("should reject promise when transition abortion timeouted", async () => {
+      const testEmitter = new EventEmitter();
+      const handler = new DelayedTransitionHandler(5, testEmitter);
+      handler.scheduleTransition();
+      await expect(handler.waitForAbortion(1)).rejects.toEqual(
+        State.TRANSITIONING
+      );
+    });
+  });
 });

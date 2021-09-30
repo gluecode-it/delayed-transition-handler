@@ -116,6 +116,29 @@ export class DelayedTransitionHandler {
     });
   }
 
+  public async waitForAbortion(timeoutInMs?: number) {
+    return new Promise((resolve, reject) => {
+      let handle: NodeJS.Timeout;
+
+      const transitionHandler = () => {
+        clearTimeout(handle);
+        resolve(this.getState());
+      };
+
+      if (timeoutInMs) {
+        handle = setTimeout(() => {
+          this.emitter.removeListener(
+            Events.TRANSITION_ABORT,
+            transitionHandler
+          );
+          return reject(this.getState());
+        });
+      }
+
+      this.onceTransitionAborted(transitionHandler);
+    });
+  }
+
   public waitForTransitionOrAbortion(timeoutInMs?: number) {
     return new Promise((resolve, reject) => {
       let handle: NodeJS.Timeout;
