@@ -19,7 +19,7 @@
     "@semantic-release/github": "7.2.3",
     "@types/jest": "26.0.23",
     "@types/node": "15.12.4",
-    "babel-jest": "27.0.5",
+    "babel-jest": "28.0.3",
     "commitlint": "12.1.4",
     "husky": "6.0.0",
     "jest": "27.0.5",
